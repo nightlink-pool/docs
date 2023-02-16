@@ -18,7 +18,7 @@ What infrastructure are you building on?
 Do you have any token plans?
 
 Market Size/ Growth: 
-The average volume traded on the FTSE100 is around 875 million, this is 33 times smaller than that of BTC-USD which averages 29 billion. The average total weekly amount of trades made through dark pools are 33 million for equities based on FINRA’s ATS data. This means there could be an estimated 1 billion trades per week in BTC-USD alone. 
+The average volume traded on the FTSE100 is around 875 million, this is 33 times smaller than that of BTC-USD which averages 29 billion. The average total weekly amount of trades made through dark pools are 33 million for equities based on FINRA’s ATS data. This means there could be an estimated 1 billion trades per week in BTC-USD alone. SFOX provides decentralised dark pools and are estimated to have increased their employee count by 30% last year. This speaks to the size and growth of this space. 
 
 Why now? How ready is the market?
 
