@@ -18,6 +18,8 @@ What infrastructure are you building on?
 Do you have any token plans?
 
 Market Size/ Growth: 
+The average volume traded on the FTSE100 is around 875 million, this is 33 times smaller than that of BTC-USD which averages 29 billion. The average total weekly amount of trades made through dark pools are 33 million for equities based on FINRA’s ATS data. This means there could be an estimated 1 billion trades per week in BTC-USD alone. 
+
 Why now? How ready is the market?
 
 Have you validated the problem you are attacking and/or the solution?
