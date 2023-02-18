@@ -37,6 +37,7 @@ Why now? How ready is the market?
 Blockchain technology is being adopted by more businesses and individuals. This is driving market growth. As this market becomes more mainstream, demand for advanced trading solutions will rise. There is a need for more efficient and secure methods of executing block trades. In addition we have seen dark pools similar to that of equity dark pools emerging in the market.
 
 Have you validated the problem you are attacking and/or the solution?
+The problem of executing trades while avoiding slippage exists across asset classes and dark pools have been a valid solution in most cases. In the case of cryptocurrencies, where the market can be fragmented and volatile dark pools can offer a valuable solution to avoiding slippage. This has been shown be the creation of dark pools for crypto already. 
 
 What are your plans with Moonbeam?
 Use the moonbeam sdk to help 
