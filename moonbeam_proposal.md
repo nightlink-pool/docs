@@ -13,13 +13,13 @@ We aim to allow individual investors the opportunity to provide the liquidity in
 What infrastructure are you building on?
 We plan to build using 3 core technologies:
 1: Substrate
-Used build the parachain that is the core of the protocol. Will be used 
+Used build the parachain that is the core of the protocol. Will be used to build the nightlink network and is key to coordinating the reservation and transfer of funds and the encrypted orderbook. 
 
 2: Phala's PhatContract.
-We need a way of matching orders privately and securely so that the system can not be gamed and the options invalidated. We also need a secure ocw env to process the encrypted data. PhatContract will allow us to do this while storing api keys securely so they can interact and communicate .
+We need a way of matching orders privately and securely so that the system can not be gamed and the options invalidated. We also need a secure ocw env to process the encrypted data. PhatContract will allow us to do this while storing api keys securely so they can interact and communicate.
 
-3: Moonbeams
-We will use moonbeam to deploy a contract that allows for a quick and efficient on and off ramp for ethereum holders into their local nightlink wallet, thereby enabling a low barrier of entry via the ui.
+3: Moonbeam
+We will use moonbeam to allow for a quick and efficient on and off ramp for eth holders into their local nightlink wallet, thereby enabling a low barrier of entry via the ui.
 
 Do you have any token plans?
 Yes, we have thought about tokenisation as a way to enhance our business model. Our approach involves using ?(dot/ksm)? tokens to cover transaction fees, which allows us to use the tokens to represent a profit share in the network. This will create a more aligned and incentivised ecosystem where all participants have a stake in the success of the network.
@@ -38,7 +38,7 @@ Have you validated the problem you are attacking and/or the solution?
 The problem of executing trades while avoiding slippage exists across asset classes and dark pools have been a valid solution in most cases. In the case of cryptocurrencies, where the market can be fragmented and volatile, dark pools can offer a valuable solution to avoiding slippage. This has been shown be the creation of dark pools for crypto already. 
 
 What are your plans with Moonbeam?
-Use the moonbeam sdk to help 
+Moonbeam are going to be essential for the realisation of this project, allowing free flow of ether (and other erc-20s) onto the system. We would also like to learn how else Moonbeam can help this project come to fruition.    
 
 In case you are admitted to the accelerator, what would you present at the Demo Day?
 Prove that the order is actually private.
