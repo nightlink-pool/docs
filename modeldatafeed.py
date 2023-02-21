@@ -236,9 +236,8 @@ def options_api(coin):
     return coin_df
 
 #df = options_api('BTC')
-#df.to_csv('/Users/benscanlon/Downloads/BTCoptions.csv')
 
-options_df = pd.read_csv('/Users/benscanlon/Downloads/BTCoptions.csv')
+#options_df = pd.read_csv('BTCoptions.csv')
 
 def get_options_data(options_df):
     # Extract underlying, expiration date, strike price, and type from instrument_name column
@@ -554,6 +553,6 @@ def model_data(ticker, start, end):
     return df
 
 df = model_data('BTC/USD', '2022-02-01T00:00:00Z', '2022-02-02T12:00:00Z')
-df.to_csv('yourfilepath')
+
 
 
