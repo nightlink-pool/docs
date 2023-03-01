@@ -7,6 +7,7 @@ from datetime import datetime
 import time
 import threading
 import concurrent.futures
+import matplotlib.pyplot as plt
 
 def get_options_data(ticker):
     # Initialize the Deribit exchange API
@@ -235,9 +236,10 @@ def options_api(coin):
 
     return coin_df
 
-df = options_api('BTC')
+#df = options_api('BTC')
+#df.to_csv('/Users/')
 
-#options_df = pd.read_csv('Users/benscanlon/Downloads/BTCoptions.csv')
+#options_df = pd.read_csv('/Users/')
 
 def get_options_data(options_df):
     # Extract underlying, expiration date, strike price, and type from instrument_name column
@@ -251,9 +253,9 @@ def get_options_data(options_df):
 
     return new_options_df
 
-print(get_options_data(df))
-df1 = get_options_data(df)
-df1.to_csv('Users/benscanlon/Downloads/btcoptions2102.csv')
+#print(get_options_data(df))
+#df1 = get_options_data(df)
+#df1.to_csv('/Users/')
 
 # Get trade book in order to simulate market
 def fetch_trades(exchange, symbol, since):
@@ -554,7 +556,294 @@ def model_data(ticker, start, end):
 
     return df
 
-#df = model_data('BTC/USD', '2022-02-01T00:00:00Z', '2022-02-02T12:00:00Z')
+#df = model_data('BTC/USD', '2023-02-20T00:00:00Z', '2023-02-21T12:00:00Z')
+#print(df)
+#df.to_csv('/Users/')
+
+
+from scipy.stats import norm, expon, gamma, poisson
+
+def get_trades(tic):
+    exchange = ccxt.binance({
+        'rateLimit': 2000,
+        'enableRateLimit': True,
+    })
+
+    # Get the timestamp for one month ago
+    from datetime import datetime, timedelta
+    # Get the timestamp for one month ago in milliseconds
+    import concurrent.futures
+
+    # Get the timestamp for one month ago in milliseconds
+    one_month_ago = int((datetime.now() - timedelta(days=7)).timestamp() * 1000)
+
+    # Initialize a empty list to store the trades
+    all_trades = []
+
+    # Set the number of trades to retrieve in each request
+    limit = 1000
+
+    # Set the starting point for the request
+    since = one_month_ago
+
+    # Define a function that retrieves the trades
+    def get_trades(since):
+        trades = exchange.fetch_trades('BTC/USDT', since=since, limit=limit)
+        return trades
+
+    # Use a ThreadPoolExecutor to run the function in multiple threads
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # Submit the function to the executor with different arguments
+        futures = [executor.submit(get_trades, since) for _ in range(5)]
+
+        # Wait for all the futures to complete
+        concurrent.futures.wait(futures)
+
+        # Get the results from the futures
+        results = [future.result() for future in futures]
+
+    # Flatten the list of results
+    all_trades = [trade for sublist in results for trade in sublist]
+
+    # Create the DataFrame from the trades list
+    df = pd.DataFrame(all_trades)
+
+    df1 = df[['timestamp', 'symbol', 'side', 'price', 'amount']]
+    df1['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+
+    return df1
+
+#print(get_trades('BTC/USDT'))
+
+def dist(tic):
+    df = get_trades(tic)
+
+    # Get the buy and sell trades
+    buy_trades = df[df['side'] == 'buy']
+    sell_trades = df[df['side'] == 'sell']
+
+    # Plot the distribution of buy and sell orders
+    plt.hist([buy_trades.shape[0], sell_trades.shape[0]], color=['green'],
+             label=['Buy', 'Sell'], density=True, stacked=True)
+    plt.legend()
+    plt.xlabel('Number of Orders')
+    plt.ylabel('Probability')
+    plt.title('Distribution of Buy and Sell Orders')
+    plt.show()
+
+    # Plot the distribution of buy and sell amount
+    plt.hist([buy_trades['amount'], sell_trades['amount']], color=['green', 'red'],
+             label=['Buy', 'Sell'], density=True, stacked=True)
+    plt.legend()
+    plt.xlabel('Amount')
+    plt.ylabel('Probability')
+    plt.title('Distribution of Buy and Sell Amount')
+    plt.show()
+
+#dist('BTC/USDT')
+
+#df = model_data('BTC/USD', '2023-02-27T00:00:00Z', '2023-02-28T12:00:00Z')
+#print(df)
+#df.to_csv('yourfilepath')
+
+real_data = pd.read_csv('yourfilepath')
+
+def match(df):
+    # Initialize an empty dataframe to store the arbitrage opportunities
+    opportunities = pd.DataFrame(columns=['buy_price', 'sell_price', 'volume', 'profit', 'cash_profit'])
+
+    # Iterate through all possible pairs of buy and sell orders
+    for i, buy_order in df[df['buy/sell'] == 'buy'].iterrows():
+        buy_price = buy_order['price']
+        buy_amount = buy_order['amount']
+
+        for j, sell_order in df[df['buy/sell'] == 'sell'].iterrows():
+            sell_price = sell_order['price']
+            sell_amount = sell_order['amount']
+
+            # Check if the sell price is higher than the buy price
+            if sell_price > buy_price:
+                # Calculate the maximum volume that can be traded
+                volume = min(buy_amount, sell_amount)
+
+                # Calculate the profit in terms of price and cash
+                profit = sell_price - buy_price
+                cash_profit = profit * volume
+
+                # Add the arbitrage opportunity to the dataframe
+                opportunities = opportunities.append({
+                    'buy_price': buy_price,
+                    'sell_price': sell_price,
+                    'volume': volume,
+                    'profit': profit,
+                    'cash_profit': cash_profit
+                }, ignore_index=True)
+
+                # Reduce the remaining buy and sell amounts
+                buy_amount -= volume
+                sell_amount -= volume
+
+                # Update the amounts in the original dataframe
+                df.at[i, 'amount'] = buy_amount
+                df.at[j, 'amount'] = sell_amount
+
+                # Check if the buy order has been fully matched
+                if buy_amount == 0:
+                    break
+
+        # Check if all buy orders have been fully matched
+        if df[df['buy/sell'] == 'buy']['amount'].sum() == 0:
+            break
+
+    return opportunities
+
+
+
+def match_opt(df):
+    # Sort the dataframe by price in ascending order
+    df = df.sort_values('price')
+
+    # Initialize an empty dataframe to store the arbitrage opportunities
+    opportunities = pd.DataFrame(columns=['buy_price', 'sell_price', 'volume', 'profit', 'cash_profit'])
+
+    # Initialize two pointers for the buy and sell orders
+    buy_pointer = 0
+    sell_pointer = len(df) - 1
+
+    # Iterate through the order book until the pointers meet
+    while buy_pointer < sell_pointer:
+        # Get the buy and sell orders at the current pointers
+        buy_order = df.iloc[buy_pointer]
+        sell_order = df.iloc[sell_pointer]
+
+        # Check if the sell price is higher than the buy price
+        if sell_order['price'] > buy_order['price']:
+            # Calculate the maximum volume that can be traded
+            volume = min(buy_order['amount'], sell_order['amount'])
+
+            # Calculate the profit in terms of price and cash
+            profit = sell_order['price'] - buy_order['price']
+            cash_profit = profit * volume
+
+            # Add the arbitrage opportunity to the dataframe
+            opportunities = opportunities.append({
+                'buy_price': buy_order['price'],
+                'sell_price': sell_order['price'],
+                'volume': volume,
+                'profit': profit,
+                'cash_profit': cash_profit
+            }, ignore_index=True)
+
+            # Reduce the remaining buy and sell amounts
+            buy_amount = buy_order['amount'] - volume
+            sell_amount = sell_order['amount'] - volume
+
+            # Update the amounts in the original dataframe
+            df.at[buy_pointer, 'amount'] = buy_amount
+            df.at[sell_pointer, 'amount'] = sell_amount
+
+            # Check if the buy order has been fully matched
+            if buy_amount == 0:
+                buy_pointer += 1
+
+            # Check if the sell order has been fully matched
+            if sell_amount == 0:
+                sell_pointer -= 1
+
+        # If the sell price is not higher than the buy price, move the buy pointer up
+        else:
+            buy_pointer += 1
+
+    return opportunities
+
+def match_pooling(df):
+    df = df.sort_values(by='price', ascending=False)
+    buy_dict = {}
+    arbitrage_opportunities = []
+
+    for i, row in df.iterrows():
+        if row['buy/sell'] == 'buy':
+            if row['amount'] not in buy_dict:
+                buy_dict[row['amount']] = []
+            buy_dict[row['amount']].append(row['price'])
+
+        else:  # sell order
+            sell_price = row['price']
+            sell_amount = row['amount']
+            remaining_sell_amount = sell_amount
+
+            for amount, prices in sorted(buy_dict.items()):
+                buy_price = min(prices)
+                buy_amount = amount
+                max_trade_amount = min(buy_amount, remaining_sell_amount)
+
+                if max_trade_amount == 0:
+                    break
+
+                cash_profit = (sell_price - buy_price) * max_trade_amount
+                arbitrage_opportunities.append(
+                    {'buy price': buy_price, 'sell price': sell_price, 'volume': max_trade_amount,
+                     'profit': cash_profit})
+
+                buy_dict[amount].remove(buy_price)
+                if not buy_dict[amount]:
+                    del buy_dict[amount]
+
+                remaining_sell_amount -= max_trade_amount
+                if remaining_sell_amount == 0:
+                    break
+
+    return pd.DataFrame(arbitrage_opportunities)
+
+def match_pooling1(df):
+    df = df.sort_values(by='price', ascending=False)
+    buy_dict = {}
+    arbitrage_opportunities = []
+
+    for i, row in df.iterrows():
+        if row['buy/sell'] == 'buy':
+            if row['amount'] not in buy_dict:
+                buy_dict[row['amount']] = []
+            buy_dict[row['amount']].append(row['price'])
+
+        else:  # sell order
+            sell_price = row['price']
+            sell_amount = row['amount']
+            remaining_sell_amount = sell_amount
+
+            for amount, prices in sorted(buy_dict.items()):
+                buy_price = min(prices)
+                buy_amount = amount
+                max_trade_amount = min(buy_amount, remaining_sell_amount)
+
+                if max_trade_amount == 0:
+                    break
+
+                cash_profit = (sell_price - buy_price) * max_trade_amount
+                volume = min(buy_amount, remaining_sell_amount)
+                profit = (sell_price - buy_price) * volume
+                arbitrage_opportunities.append(
+                    {'buy price': buy_price, 'sell price': sell_price, 'volume': volume, 'profit': profit})
+
+                buy_dict[amount].remove(buy_price)
+                if not buy_dict[amount]:
+                    del buy_dict[amount]
+
+                remaining_sell_amount -= max_trade_amount
+                if remaining_sell_amount == 0:
+                    break
+
+    return pd.DataFrame(arbitrage_opportunities)
+
+
+
+df_arb = match_opt(real_data)
+print(df_arb)
+print(df_arb['cash_profit'].sum())
+
+
+
+
 
 
 
